@@ -14,7 +14,7 @@ class ChatUserFactory extends Factory
         return [
             'chat_id' =>rand(1,3),
             'user_id' => rand(1,2),
-            'user_role' => array_rand(['user','admin']),
+            'user_role' => fake()->randomElement(['user', 'admin']),
         ];
     }
 }

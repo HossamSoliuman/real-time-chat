@@ -21,9 +21,15 @@ Route::get('/',function(){
 Route::post('login', [AuthenticationController::class, 'login']);
 Route::post('register', [AuthenticationController::class, 'register']);
 
+
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::resources([
         'messages' => MessageController::class,
         'chats' => ChatController::class,
     ]);
+    Route::post('/chats/{chat}/users', [ChatController::class, 'addParticipants']);
+    Route::delete('/chats/{chat}/users', [ChatController::class, 'removeParticipant']);
+    Route::post('/chats/{chat}/admins', [ChatController::class, 'addAdmin']);
+    Route::delete('/chats/{chat}/admins', [ChatController::class, 'removeAdmin']);
+
 });

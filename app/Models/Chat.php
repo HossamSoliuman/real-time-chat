@@ -9,7 +9,7 @@ class Chat extends Model
 {
     use HasFactory;
 
-    protected $fillabe = [
+    protected $fillable = [
         'name',
         'chat_type',
         
@@ -17,6 +17,10 @@ class Chat extends Model
     protected $hidden=[
         'pivot'
     ];
+    public function usersWithRole()
+    {
+        return $this->belongsToMany(User::class)->withPivot('user_role');
+    }
     public function users(){
         return $this->belongsToMany(User::class);
     }
