@@ -1,64 +1,64 @@
 <?php
-
 namespace App\Http\Controllers;
 
+use App\Http\Requests\MessageStoreRequest;
+use App\Models\Chat;
 use App\Models\Message;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    use ApiResponse;
+
+    public function store(MessageStoreRequest $request)
     {
-        //
+        $validatedData = $request->validated();
+        $chat = $validatedData['chat'];
+        $message = $validatedData['message'];
+        $user = auth()->user();
+
+        $this->authorize('create', [$user, Chat::findOrFail($chat)]);
+
+        Message::create([
+            'message' => $message,
+            'user_id' => $user->id,
+            'chat_id' => $chat,
+        ]);
+
+        return $this->customResponse([], 'Message created successfully');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Message  $message
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Message $message)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Message  $message
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Message $message)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Message  $message
-     * @return \Illuminate\Http\Response
-     */
     public function destroy(Message $message)
     {
-        //
+        $user = auth()->user();
+
+        $this->authorize('delete', [$user, $message]);
+
+        $message->delete();
+
+        return $this->customResponse([], 'Message deleted successfully');
+    }
+
+    public function restore(Message $message)
+    {
+        $user = auth()->user();
+
+        $this->authorize('restore', [$user, $message]);
+
+        $message->restore();
+
+        return $this->successResponse($message);
+    }
+
+    public function softDelete(Message $message)
+    {
+        $user = auth()->user();
+
+        $this->authorize('softDelete', [$user, $message]);
+
+        $message->delete();
+
+        return $this->customResponse([], 'Message deleted successfully');
     }
 }

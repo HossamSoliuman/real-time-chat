@@ -21,12 +21,13 @@ class MessageResource extends JsonResource
         $date = Carbon::parse($this->created_at)->diffForHumans();
         $created_at = Carbon::parse($this->created_at)->format('Y m d \a\t h:m A');
         return [
+            'id' => $this->id,
             'message' => $this->message,
             'date' => $date,
             'created_at' => $created_at,
             'is_deleted' => $is_deleted,
             'user_id' => $this->user->id,
-            'user_name' => $this->user->name,
+            'user_name' => $this->user->user_name,
         ];
     }
 }

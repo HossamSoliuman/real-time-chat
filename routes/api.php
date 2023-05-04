@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MessageController;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\Mime\MessageConverter;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +16,8 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::get('/',function(){
+
+Route::get('/', function () {
     return 'hello';
 });
 Route::post('login', [AuthenticationController::class, 'login']);
@@ -23,13 +25,18 @@ Route::post('register', [AuthenticationController::class, 'register']);
 
 
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::resources([
-        'messages' => MessageController::class,
+    Route::apiResources([
         'chats' => ChatController::class,
+    ]);
+    Route::apiResource('messages', MessageController::class)->except([
+        'show',
+        'update', 
     ]);
     Route::post('/chats/{chat}/users', [ChatController::class, 'addParticipants']);
     Route::delete('/chats/{chat}/users', [ChatController::class, 'removeParticipant']);
     Route::post('/chats/{chat}/admins', [ChatController::class, 'addAdmin']);
     Route::delete('/chats/{chat}/admins', [ChatController::class, 'removeAdmin']);
 
+    Route::put('/messages/{message}/restore', [MessageController::class, 'restore'])->name('messages.restore');
+    Route::delete('/messages/{message}/delete', [MessageController::class, 'softDelete'])->name('messages.softDelete');
 });
