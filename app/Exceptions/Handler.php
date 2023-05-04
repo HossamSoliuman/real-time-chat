@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 
@@ -52,6 +53,10 @@ class Handler extends ExceptionHandler
     {
         if ($exception instanceof AuthenticationException) {
             return response()->json(['error' => 'Unauthenticated.'], 401);
+        }
+
+        if ($exception instanceof ModelNotFoundException) {
+            return response()->json(['error' => 'Model not found.'], 404);
         }
 
         return parent::render($request, $exception);

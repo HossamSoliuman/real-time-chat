@@ -28,10 +28,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResources([
         'chats' => ChatController::class,
     ]);
-    Route::apiResource('messages', MessageController::class)->except([
-        'show',
-        'update', 
-    ]);
+    Route::apiResource('messages', MessageController::class);
+    
     Route::post('/chats/{chat}/users', [ChatController::class, 'addParticipants']);
     Route::delete('/chats/{chat}/users', [ChatController::class, 'removeParticipant']);
     Route::post('/chats/{chat}/admins', [ChatController::class, 'addAdmin']);

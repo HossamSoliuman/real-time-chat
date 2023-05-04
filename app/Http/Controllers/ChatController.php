@@ -67,7 +67,7 @@ class ChatController extends Controller
         $this->authorize('view', $chat);
 
         $chat->load(['messages' => function ($query) {
-            $query->where('deleted_at', null)->with('user');
+            $query->withTrashed()->with('user');
         }, 'usersWithRole']);
 
         return $this->successResponse(new ChatMessagesResource($chat));
