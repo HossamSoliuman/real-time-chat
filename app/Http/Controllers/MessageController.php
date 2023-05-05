@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageCreated;
+use App\Events\MessageStatusUpdated;
 use App\Http\Requests\MessageStoreRequest;
 use App\Http\Resources\MessageResource;
 use App\Models\Chat;
@@ -26,18 +28,18 @@ class MessageController extends Controller
 
         // $this->authorize('create', [$user, $chat]);
 
-        Message::create([
+        $message = Message::create([
             'message' => $message,
             'user_id' => $user->id,
             'chat_id' => $chat->id,
         ]);
-
-        return $this->customResponse([], 'Message created successfully');
+        broadcast(new MessageCreated($message, $chat))->toOthers();
+        return $this->successResponse(MessageResource::make($message));
     }
     public function destroy(Message $message)
     {
+         $this->messageAuthorize($message);
 
-        $this->messageAuthorize($message);
         $message->delete();
 
         return $this->customResponse([], 'Message deleted successfully');
@@ -49,16 +51,20 @@ class MessageController extends Controller
         $this->messageAuthorize($getMessage);
 
         $getMessage->restore();
-
-        return $this->successResponse( MessageResource::make($getMessage) );
+        $chat = $getMessage->chat;
+        broadcast(new MessageStatusUpdated($getMessage, $chat));
+        return $this->successResponse(MessageResource::make($getMessage));
     }
 
     public function softDelete(Message $message)
     {
         $this->messageAuthorize($message);
-        $message->delete();
+        $chat = $message->chat;
 
-        return $this->customResponse([], 'Message deleted successfully');
+        broadcast(new MessageStatusUpdated($message, $chat));
+
+        return $this->successResponse(MessageResource::make($message));
+        $message->softDelete();
     }
     public function messageAuthorize($message)
     {

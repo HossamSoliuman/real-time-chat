@@ -35,3 +35,9 @@ Broadcast::channel('chat.user.added.{id}', function ($user, $id) {
 Broadcast::channel('chat.user.remove.{id}', function ($user, $id) {
     return Chat::findOrFail($id)->users()->contains($user);
 });
+Broadcast::channel('message.created.{chatId}', function ($user, $chatId) {
+    return Chat::findOrFail($chatId)->users()->contains($user);
+});
+Broadcast::channel('message.status.updated.{chatId}', function ($user, $chatId) {
+    return Chat::findOrFail($chatId)->users()->contains($user);
+});
