@@ -2,6 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ChatAdminAdded;
+use App\Events\ChatAdminRemoved;
+use App\Events\ChatCreated;
+use App\Events\ChatUpdated;
+use App\Events\ChatDeleted;
+use App\Events\ChatUserAdded;
+use App\Events\ChatUserRemoved;
 use App\Http\Requests\ChatAddUserRequest;
 use App\Http\Requests\ChatAdminRequest;
 use App\Http\Requests\ChatStoreRequest;
@@ -30,9 +37,7 @@ class ChatController extends Controller
         $chats = $user->chats()->with(['messages' => function ($query) {
             $query->latest()->first();
         }])->get();
-
-        $formattedChats = ChatResource::collection($chats);
-        return $this->successResponse($formattedChats);
+        return $this->successResponse(ChatResource::collection($chats));
     }
 
     /**
@@ -53,6 +58,7 @@ class ChatController extends Controller
 
         $chat->users()->attach($validatedData['users']);
         $chat->users()->updateExistingPivot($user->id, ['user_role' => 'admin']);
+        broadcast(new ChatCreated($chat));
         return $this->successResponse(['chat_id' => $chat->id], 201);
     }
 
@@ -87,6 +93,7 @@ class ChatController extends Controller
         $chat->update([
             'name' => $chat_name,
         ]);
+        broadcast(new ChatUpdated($chat));
         return $this->customResponse([], 'Succussfully updated');
     }
 
@@ -99,14 +106,14 @@ class ChatController extends Controller
     public function destroy(Chat $chat)
     {
         $this->authorize('delete', $chat);
-
+        broadcast(new ChatDeleted($chat));
         // Detach all users from the chat
         $chat->users()->detach();
 
         // Delete the chat
         $chat->delete();
 
-        return $this->successResponse(null, 'Chat deleted successfully');
+        return $this->successResponse('Chat deleted successfully');
     }
 
     /**
@@ -132,7 +139,7 @@ class ChatController extends Controller
             }
             $chat->users()->attach($user);
         }
-
+        broadcast(new ChatUserAdded(User::find($userIds), $chat));
         return $this->customResponse(null, 'Users added to chat successfully');
     }
 
@@ -154,7 +161,7 @@ class ChatController extends Controller
 
         // Remove the user from the chat
         $chat->users()->detach($user);
-
+        broadcast(new ChatUserRemoved(User::find($user), $chat));
         return $this->successResponse('User removed from chat successfully');
     }
 
@@ -170,15 +177,13 @@ class ChatController extends Controller
         $this->authorize('update', $chat);
 
         $user = $request->validated('user');
-
-        // Check if the user is a member of the chat
+    
         if (!$chat->users->contains($user)) {
             return $this->errorResponse('User is not a member of the chat', 404);
         }
 
-        // Update the user role to admin
         $chat->users()->updateExistingPivot($user, ['user_role' => 'admin']);
-
+        broadcast(new ChatAdminAdded(User::find($user), $chat));
         return $this->successResponse('User role updated to admin successfully');
     }
 
@@ -195,14 +200,12 @@ class ChatController extends Controller
 
         $user = $request->validated('user');
 
-        // Check if the user is a member of the chat
         if (!$chat->users->contains($user)) {
             return $this->errorResponse('User is not a member of the chat', 404);
         }
 
-        // Update the user role to user
         $chat->users()->updateExistingPivot($user, ['user_role' => 'user']);
-
-        return $this->successResponse( 'User role updated to user successfully');
+        broadcast(new ChatAdminRemoved(User::find($user), $chat));
+        return $this->successResponse('User role updated to user successfully');
     }
 }

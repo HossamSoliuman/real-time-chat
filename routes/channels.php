@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Chat;
 use Illuminate\Support\Facades\Broadcast;
 
 /*
@@ -13,6 +14,24 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
+Broadcast::channel('chat.created.{id}', function ($user, $id) {
+    return Chat::findOrFail($id)->users()->contains($user);
+});
+Broadcast::channel('chat.deleted.{id}', function ($user, $id) {
+    return Chat::findOrFail($id)->users()->contains($user);
+});
+Broadcast::channel('chat.updated.{id}', function ($user, $id) {
+    return Chat::findOrFail($id)->users()->contains($user);
+});
+Broadcast::channel('chat.admin.removed.{id}', function ($user, $id) {
+    return Chat::findOrFail($id)->users()->contains($user);
+});
+Broadcast::channel('chat.admin.added.{id}', function ($user, $id) {
+    return Chat::findOrFail($id)->users()->contains($user);
+});
+Broadcast::channel('chat.user.added.{id}', function ($user, $id) {
+    return Chat::findOrFail($id)->users()->contains($user);
+});
+Broadcast::channel('chat.user.remove.{id}', function ($user, $id) {
+    return Chat::findOrFail($id)->users()->contains($user);
 });

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MessageController;
@@ -27,6 +28,7 @@ Route::post('register', [AuthenticationController::class, 'register']);
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResources([
         'chats' => ChatController::class,
+        'users' => UserController::class,
     ]);
     Route::apiResource('messages', MessageController::class);
     
