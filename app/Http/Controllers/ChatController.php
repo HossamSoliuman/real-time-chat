@@ -19,7 +19,6 @@ use App\Models\Chat;
 use App\Models\User;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 
 class ChatController extends Controller
 {
@@ -50,13 +49,14 @@ class ChatController extends Controller
     {
         $user = auth()->user();
         $validatedData = $request->validated();
-
+    
         $chat = Chat::create([
             'name' => $validatedData['name'],
             'chat_type' => $validatedData['chat_type']
         ]);
-
-        $chat->users()->attach($validatedData['users']);
+    
+        $users = collect($validatedData['users'])->push($user->id)->unique(); // get the unique list of users
+        $chat->users()->attach($users->all()); // attach all the users
         $chat->users()->updateExistingPivot($user->id, ['user_role' => 'admin']);
         broadcast(new ChatCreated($chat));
         return $this->successResponse(['chat_id' => $chat->id], 201);
