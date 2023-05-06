@@ -1,11 +1,10 @@
 <?php
 
-use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-use Symfony\Component\Mime\MessageConverter;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,7 +26,6 @@ Route::post('register', [AuthenticationController::class, 'register']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResources([
-        'chats' => ChatController::class,
         'users' => UserController::class,
     ]);
     Route::apiResource('messages', MessageController::class);
@@ -39,4 +37,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::put('/messages/{message}/restore', [MessageController::class, 'restore'])->name('messages.restore');
     Route::delete('/messages/{message}/delete', [MessageController::class, 'softDelete'])->name('messages.softDelete');
+
+    //users routes
+    Route::get('/user', [UserController::class, 'show']);
+    Route::put('/user', [UserController::class, 'update']);
+
 });
